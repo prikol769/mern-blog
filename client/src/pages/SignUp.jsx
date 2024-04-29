@@ -32,7 +32,7 @@ const SignUp = () => {
       }
       setIsLoading(false);
       if (res.ok) {
-        navigate("sign-in");
+        navigate("/sign-in");
       }
     } catch (error) {
       setIsLoading(false);
@@ -79,7 +79,7 @@ const SignUp = () => {
               <Label value="Your password" />
               <TextInput
                 type="password"
-                placeholder="Password"
+                placeholder="******"
                 id="password"
                 onChange={handleChange}
               />
