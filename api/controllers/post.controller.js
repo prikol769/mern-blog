@@ -1,4 +1,5 @@
 import { errorHandler } from "../utils/error.js";
+import Post from "../models/post.model.js";
 
 export const create = async (req, res, next) => {
   if (!req.user.isAdmin) {
@@ -8,6 +9,7 @@ export const create = async (req, res, next) => {
     return next(errorHandler(400, "Please provide all required fields"));
   }
   const slug = req.body.title
+    .trim()
     .split(" ")
     .join("-")
     .toLowerCase()
