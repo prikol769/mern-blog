@@ -1,16 +1,33 @@
 import { Alert, Button, Textarea } from "flowbite-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import Comment from "./Comment";
 
 const CommentSection = ({ postId }) => {
   const { currentUser } = useSelector((state) => state.user);
-  const [comment, setComment] = useState("");
+  const [currentComment, setCurrentComment] = useState("");
   const [commentError, setCommentError] = useState(null);
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    const getComments = async () => {
+      try {
+        const res = await fetch(`/api/comment/getPostComments/${postId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setComments(data);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    getComments();
+  }, [postId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (comment.length > 200) {
+    if (currentComment.length > 200) {
       return;
     }
 
@@ -19,7 +36,7 @@ const CommentSection = ({ postId }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content: comment,
+          content: currentComment,
           userId: currentUser._id,
           postId,
         }),
@@ -28,8 +45,9 @@ const CommentSection = ({ postId }) => {
       const data = await res.json();
 
       if (res.ok) {
-        setComment("");
+        setCurrentComment("");
         setCommentError(null);
+        setComments([data, ...comments]);
       }
     } catch (error) {
       setCommentError(error.message);
@@ -71,12 +89,12 @@ const CommentSection = ({ postId }) => {
             placeholder="Add a comment..."
             rows="3"
             maxLength="200"
-            onChange={(e) => setComment(e.target.value)}
-            value={comment}
+            onChange={(e) => setCurrentComment(e.target.value)}
+            value={currentComment}
           />
           <div className="flex justify-between items-center mt-5">
             <p className="text-gray-500">
-              {200 - comment.length} characters remaining
+              {200 - currentComment.length} characters remaining
             </p>
             <Button outline gradientDuoTone="purpleToBlue" type="submit">
               Submit
@@ -88,6 +106,22 @@ const CommentSection = ({ postId }) => {
             </Alert>
           )}
         </form>
+      )}
+
+      {comments.length === 0 ? (
+        <p className="text-sm my-5">No comments yet!</p>
+      ) : (
+        <>
+          <div className="text-sm my-5 flex items-center gap-1">
+            <p>Comments</p>
+            <div className="border border-gray-400 py-1 px-2 rounded-sm">
+              <p>{comments.length}</p>
+            </div>
+          </div>
+          {comments.map((comment) => (
+            <Comment key={comment._id} comment={comment} />
+          ))}
+        </>
       )}
     </div>
   );
